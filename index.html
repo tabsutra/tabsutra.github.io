@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tabSutra</title>
+<meta name="description" content="tabSutra builds foundation models for business data: time series, tables, event histories and relational data.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F4F8F7;
+    --card: #FFFFFF;
+    --line: #DCE7E5;
+    --ink: #0D2426;
+    --muted: #4F6A6B;
+    --faint: #86A09F;
+    --indigo-950: #061F21;
+    --indigo-900: #0A2E31;
+    --indigo-800: #0F3F42;
+    --indigo-700: #11615F;
+    --indigo-500: #1C8A85;
+    --indigo-100: #DDF1EE;
+    --sky: #8FD5CC;
+    --marigold: #F4A41E;
+    --marigold-deep: #B8730A;
+    --marigold-soft: #F8C978;
+    --radius-lg: 20px;
+    --radius: 14px;
+    --shadow: 0 1px 2px rgba(13,36,38,.05), 0 12px 32px -12px rgba(13,36,38,.18);
+    --wrap: 1200px;
+    --gutter: clamp(20px, 4vw, 40px);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  a:focus-visible { outline: 2px solid var(--marigold); outline-offset: 3px; border-radius: 4px; }
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); }
+  h1, h2, h3 { margin: 0; letter-spacing: -0.02em; }
+  p { margin: 0; }
+  .muted { color: var(--muted); }
+
+  /* ---------- header ---------- */
+  .topbar { position: fixed; inset: 0 0 auto 0; z-index: 50; transition: background .25s, border-color .25s; border-bottom: 1px solid transparent; }
+  .topbar.scrolled { background: rgba(6,31,33,.82); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom-color: rgba(255,255,255,.08); }
+  .topbar .wrap { display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .mark { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; font-weight: 700; font-size: 20px; letter-spacing: -0.02em; }
+  .mark svg { width: 28px; height: 28px; }
+  .topbar ul { display: flex; gap: 32px; list-style: none; margin: 0; padding: 0; font-size: 14.5px; font-weight: 500; }
+  .topbar ul a { text-decoration: none; color: rgba(255,255,255,.72); transition: color .15s; }
+  .topbar ul a:hover { color: #fff; }
+
+  /* ---------- hero ---------- */
+  .hero {
+    position: relative; overflow: hidden; color: #fff;
+    background:
+      radial-gradient(60% 70% at 88% 8%, rgba(28,138,133,.55) 0%, rgba(28,138,133,0) 60%),
+      radial-gradient(40% 50% at 0% 100%, rgba(244,164,30,.14) 0%, rgba(244,164,30,0) 70%),
+      linear-gradient(180deg, var(--indigo-950) 0%, var(--indigo-900) 100%);
+    padding: 150px 0 170px;
+  }
+  .hero::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background-image: radial-gradient(rgba(255,255,255,.09) 1px, transparent 1px);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(80% 70% at 70% 40%, #000 0%, transparent 75%);
+            mask-image: radial-gradient(80% 70% at 70% 40%, #000 0%, transparent 75%);
+  }
+  .hero-grid { position: relative; display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(32px, 5vw, 64px); align-items: center; }
+  h1 { font-size: clamp(2.6rem, 5.4vw, 4.4rem); line-height: 1.04; font-weight: 800; letter-spacing: -0.035em; }
+  .lede { margin-top: 26px; font-size: clamp(1.02rem, 1.4vw, 1.15rem); line-height: 1.7; color: rgba(255,255,255,.76); max-width: 52ch; }
+
+  /* product panel */
+  .panel {
+    position: relative; border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(15,63,66,.92), rgba(10,46,49,.96));
+    border: 1px solid rgba(255,255,255,.12);
+    box-shadow: 0 30px 80px -20px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06);
+    overflow: hidden;
+  }
+  .panel-bar { display: flex; align-items: center; gap: 14px; padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 13.5px; }
+  .dots { display: flex; gap: 6px; }
+  .dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,.18); }
+  .panel-title { font-weight: 600; color: rgba(255,255,255,.88); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .pill.dark { margin-left: auto; background: rgba(143,213,204,.14); color: var(--sky); }
+  .pill.new { background: rgba(244,164,30,.18); color: var(--marigold-soft); padding: 2px 8px; font-size: 11px; }
+  .panel-body { padding: 18px 20px 20px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
+  .chart-head .k { font-size: 13px; color: rgba(255,255,255,.6); }
+  .chart-head .v { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+  .chart-head .v span { font-size: 13px; font-weight: 500; color: rgba(255,255,255,.55); margin-left: 6px; letter-spacing: 0; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: rgba(255,255,255,.6); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 14px; height: 3px; border-radius: 2px; background: var(--sky); }
+  .sw.band { height: 10px; background: rgba(244,164,30,.45); }
+  #heroChart { display: block; width: 100%; height: auto; margin: 10px 0 8px; }
+  #heroChart .t { fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.8s cubic-bezier(.4,.1,.2,1) forwards; }
+  #heroChart .fan { opacity: 0; animation: appear 1s ease-out 1.6s forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes appear { to { opacity: 1; } }
+  table.mini { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.mini th { text-align: left; font-weight: 500; color: rgba(255,255,255,.5); padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+  table.mini td { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.06); color: rgba(255,255,255,.86); }
+  table.mini tr:last-child td { border-bottom: 0; }
+  table.mini th:not(:first-child), table.mini td:not(:first-child) { text-align: right; }
+  table.mini .sub { display: block; font-size: 11.5px; color: rgba(255,255,255,.48); margin-top: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- data cards over the hero edge ---------- */
+  .data-head { position: relative; margin-top: 88px; display: flex; align-items: baseline; justify-content: space-between; gap: 24px; }
+  .data-head h2 { font-size: clamp(1.5rem, 2.4vw, 1.9rem); font-weight: 700; }
+  .data { position: relative; z-index: 2; margin-top: -120px; }
+  .data-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-lg); box-shadow: var(--shadow); }
+  .dcard { padding: 24px; }
+  .dcard svg { display: block; width: 100%; height: 74px; margin-bottom: 20px; }
+  .dcard h3 { font-size: 1.08rem; font-weight: 700; margin-bottom: 8px; }
+  .dcard p { font-size: 15px; color: var(--muted); }
+
+  /* ---------- sections ---------- */
+  section { padding: clamp(72px, 9vw, 112px) 0; }
+  .sec-title { font-size: clamp(1.8rem, 3.2vw, 2.6rem); font-weight: 800; line-height: 1.12; letter-spacing: -0.03em; max-width: 22ch; }
+  .sec-head { margin-bottom: 44px; }
+
+  /* problem vs tabSutra */
+  .versus { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: stretch; }
+  .problem { padding: clamp(28px, 3.5vw, 44px); }
+  .problem h2, .ours h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 14px; }
+  .steps { list-style: none; margin: 26px 0; padding: 0; counter-reset: s; position: relative; }
+  .steps::before { content: ""; position: absolute; left: 17px; top: 18px; bottom: 18px; width: 2px; background: var(--line); }
+  .steps li { counter-increment: s; position: relative; padding: 9px 0 9px 54px; min-height: 36px; }
+  .steps li + li { margin-top: 8px; }
+  .steps li::before {
+    content: counter(s); position: absolute; left: 0; top: 4px; width: 36px; height: 36px; border-radius: 50%;
+    background: var(--card); border: 2px solid var(--line); color: var(--muted);
+    display: grid; place-items: center; font-size: 14px; font-weight: 700;
+  }
+  .steps li.again::before { content: "\21BA"; color: var(--indigo-500); border-color: var(--indigo-500); background: var(--indigo-100); }
+  .problem .foot { padding-top: 20px; border-top: 1px dashed var(--line); }
+  .ours {
+    position: relative; overflow: hidden; color: #fff; border-radius: var(--radius-lg); padding: clamp(28px, 3.5vw, 44px);
+    background: radial-gradient(80% 60% at 100% 0%, rgba(28,138,133,.6), rgba(28,138,133,0) 60%), var(--indigo-900);
+    box-shadow: var(--shadow);
+  }
+  .checks { list-style: none; margin: 22px 0 0; padding: 0; }
+  .checks li { position: relative; padding: 11px 0 11px 36px; color: rgba(255,255,255,.88); border-top: 1px solid rgba(255,255,255,.1); }
+  .checks li:first-child { border-top: 0; }
+  .checks li::before {
+    content: ""; position: absolute; left: 0; top: 14px; width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(244,164,30,.18) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M6 12.5l4 4 8-9' fill='none' stroke='%23F2B134' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/14px no-repeat;
+  }
+  .ours .note { margin-top: 18px; padding: 16px 18px; border-radius: var(--radius); background: rgba(255,255,255,.06); border: 1px solid rgba(244,164,30,.3); color: var(--marigold-soft); font-size: 15.5px; }
+
+  /* what you can predict: tiles */
+  .bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .tile { padding: 26px; display: flex; flex-direction: column; gap: 18px; }
+  .tile.wide { grid-column: span 2; }
+  .tile h3 { font-size: 1.12rem; font-weight: 700; margin-bottom: 6px; }
+  .tile p { color: var(--muted); font-size: 15.5px; }
+  .demo { border-radius: var(--radius); background: var(--bg); border: 1px solid var(--line); padding: 16px; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+  .demo svg { width: 100%; height: auto; display: block; }
+  .demo .lbl { font-size: 12.5px; color: var(--faint); font-weight: 500; }
+  .bars { display: grid; gap: 10px; }
+  .bar { display: grid; grid-template-columns: 1fr 46px; gap: 10px; align-items: center; font-size: 13px; }
+  .bar .name { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; margin-bottom: -6px; }
+  .bar .track { display: block; height: 8px; border-radius: 4px; background: var(--indigo-100); overflow: hidden; }
+  .bar .fill { display: block; height: 100%; border-radius: 4px; background: var(--indigo-500); }
+  .bar .fill.hi { background: var(--marigold); }
+  .bar b { text-align: right; font-weight: 700; }
+  .big { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; color: var(--indigo-700); }
+  .range { font-size: 13px; color: var(--muted); margin-top: 4px; }
+  .tree { display: grid; gap: 12px; }
+  .tree .top { justify-self: center; padding: 8px 16px; border-radius: 10px; background: var(--indigo-900); color: #fff; font-size: 13px; font-weight: 600; display: flex; gap: 12px; }
+  .tree .top b { color: var(--marigold); }
+  .tree .kids { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; position: relative; padding-top: 14px; }
+  .tree .kids::before { content: ""; position: absolute; top: 0; left: 16.6%; right: 16.6%; height: 14px; border: 1.5px solid var(--line); border-bottom: 0; border-radius: 8px 8px 0 0; }
+  .tree .kid { padding: 8px 10px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); font-size: 12.5px; color: var(--muted); text-align: center; }
+  .tree .kid b { display: block; color: var(--ink); font-size: 14px; }
+
+  /* cold start band */
+  .band { position: relative; overflow: hidden; color: #fff; background: radial-gradient(50% 60% at 85% 50%, rgba(28,138,133,.35), rgba(28,138,133,0) 70%), var(--indigo-950); }
+  .cold { display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
+  .cold .sec-title { color: #fff; }
+  .cold .intro { list-style: none; margin: 24px 0 0; padding: 0; }
+  .cold .intro li { color: rgba(255,255,255,.8); padding: 4px 0; }
+  .gives { margin-top: 34px; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .give { padding: 18px 20px; border-radius: var(--radius); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.09); }
+  .give h3 { font-size: 1rem; font-weight: 700; color: var(--marigold); margin-bottom: 6px; }
+  .give p { color: rgba(255,255,255,.72); font-size: 14.5px; }
+  figure { margin: 0; position: relative; }
+  .scatter { width: 100%; height: auto; display: block; }
+  .float {
+    position: absolute; right: 2%; bottom: 7%; width: 230px; padding: 14px 16px; border-radius: var(--radius);
+    background: rgba(15,63,66,.92); border: 1px solid rgba(255,255,255,.14); box-shadow: 0 20px 50px -16px rgba(0,0,0,.6); font-size: 13px;
+  }
+  .float .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .float .nm { font-weight: 700; font-size: 14px; }
+  .float .meta { color: rgba(255,255,255,.6); margin-top: 6px; }
+  .float .val { margin-top: 8px; font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+  .float .val span { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.55); margin-left: 4px; letter-spacing: 0; }
+  figcaption { margin-top: 14px; font-size: 13.5px; color: rgba(255,255,255,.55); }
+
+  /* use cases */
+  .uses { display: grid; grid-template-columns: repeat(6, 1fr); gap: 18px; }
+  .use { padding: 28px; grid-column: span 2; }
+  .use.half { grid-column: span 3; }
+  .icon { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; background: var(--indigo-100); color: var(--indigo-700); margin-bottom: 20px; }
+  .icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .use h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 8px; }
+  .use p { color: var(--muted); font-size: 15.5px; }
+
+  /* production */
+  .prod { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; overflow: hidden; }
+  .prod > div { grid-column: span 2; padding: 30px 28px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .prod > div:nth-child(3) { border-right: 0; }
+  .prod > div:nth-child(n+4) { grid-column: span 3; border-bottom: 0; }
+  .prod > div:nth-child(5) { border-right: 0; }
+  .prod .icon { width: 40px; height: 40px; border-radius: 10px; margin-bottom: 16px; }
+  .prod .icon svg { width: 21px; height: 21px; }
+  .prod h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 6px; }
+  .prod p { color: var(--muted); font-size: 15px; }
+
+  /* how it is used */
+  .how { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; counter-reset: h; position: relative; }
+  .how li { counter-increment: h; padding: 28px; position: relative; }
+  .how .step { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .how .step::before {
+    content: counter(h); width: 34px; height: 34px; border-radius: 50%; flex: none;
+    display: grid; place-items: center; font-weight: 800; font-size: 14px; color: #fff; background: var(--indigo-700);
+  }
+  .how .step .icon { margin: 0; width: 34px; height: 34px; border-radius: 10px; background: transparent; }
+  .how li:not(:last-child)::after {
+    content: ""; position: absolute; top: 45px; right: -18px; width: 18px; height: 2px; background: var(--line);
+  }
+  .how p { color: var(--ink); font-size: 16px; }
+
+  /* team and name */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  .pair .card { padding: clamp(28px, 3.5vw, 40px); }
+  .pair h2 { font-size: 1.4rem; font-weight: 800; margin-bottom: 12px; }
+  .pair p { color: var(--muted); max-width: 52ch; }
+  .sutra { background: linear-gradient(135deg, #FFF6E6, #FFFFFF 60%); border-color: #F1DFBA; }
+
+  footer { background: var(--indigo-950); color: rgba(255,255,255,.62); font-size: 14.5px; }
+  footer .wrap { display: flex; justify-content: space-between; align-items: center; padding-top: 34px; padding-bottom: 34px; gap: 16px; flex-wrap: wrap; }
+  footer .mark { font-size: 18px; }
+  footer .mark svg { width: 24px; height: 24px; }
+  footer .meta { display: flex; gap: 28px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    #heroChart .t { animation: none; stroke-dashoffset: 0; }
+    #heroChart .fan { animation: none; opacity: 1; }
+    html { scroll-behavior: auto; }
+  }
+  @media (max-width: 1020px) {
+    .data-grid { grid-template-columns: 1fr 1fr; }
+    .data { margin-top: -96px; }
+  }
+  @media (max-width: 860px) {
+    .topbar ul { display: none; }
+    .hero { padding: 120px 0 150px; }
+    .hero-grid, .versus, .cold, .pair { grid-template-columns: 1fr; }
+    .bento, .gives { grid-template-columns: 1fr; }
+    .tile.wide { grid-column: auto; }
+    .uses { grid-template-columns: 1fr; }
+    .use, .use.half { grid-column: auto; }
+    .prod { grid-template-columns: 1fr; }
+    .prod > div, .prod > div:nth-child(n+4) { grid-column: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    .prod > div:last-child { border-bottom: 0; }
+    .how { grid-template-columns: 1fr; }
+    .how li::after { display: none; }
+    .float { position: static; width: auto; margin-top: 16px; }
+    .data-head { margin-top: 64px; }
+  }
+  @media (max-width: 560px) {
+    .data-grid { grid-template-columns: 1fr; }
+    table.mini { font-size: 12.5px; }
+    table.mini td.num, table.mini th { white-space: nowrap; }
+    table.mini td:first-child { padding-right: 10px; }
+    .legend { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <div class="wrap">
+    <a class="mark" href="#top">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M3 22 C 9 22, 10 10, 16 10 S 23 22, 29 22" fill="none" stroke="#8FD5CC" stroke-width="2" stroke-linecap="round"/>
+        <path d="M3 16 C 9 16, 10 6, 16 6 S 23 16, 29 16" fill="none" stroke="#F4A41E" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M3 27 C 9 27, 10 18, 16 18 S 23 27, 29 27" fill="none" stroke="#8FD5CC" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      tabSutra
+    </a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="#what">What it does</a></li>
+        <li><a href="#predict">Predictions</a></li>
+        <li><a href="#cold">New products</a></li>
+        <li><a href="#uses">Use cases</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <div class="wrap hero-grid">
+    <div>
+      <h1>Predictions from your data, as it is</h1>
+      <p class="lede">tabSutra builds foundation models for business data: time series, tables, event histories and relational data. One model forecasts what will happen, how likely it is, and how much it will be. It needs no feature engineering and no model built from scratch for each use case.</p>
+    </div>
+
+    <div class="panel" aria-hidden="true">
+      <div class="panel-bar">
+        <span class="dots"><i></i><i></i><i></i></span>
+        <span class="panel-title">Weekly demand forecast</span>
+        <span class="pill dark">Store 214</span>
+      </div>
+      <div class="panel-body">
+        <div class="chart-head">
+          <div>
+            <div class="k">Basmati rice 5 kg</div>
+            <div class="v num">1,240 units<span>next week, median</span></div>
+          </div>
+          <div class="legend"><span><i class="sw"></i>History</span><span><i class="sw band"></i>80% range</span></div>
+        </div>
+        <svg id="heroChart" viewBox="0 0 560 190"></svg>
+        <table class="mini">
+          <thead><tr><th>Product</th><th>Next 4 weeks</th><th>80% range</th></tr></thead>
+          <tbody>
+            <tr><td>Basmati rice 5 kg</td><td class="num">4,960</td><td class="num">4,410 to 5,520</td></tr>
+            <tr><td>Sunflower oil 1 L</td><td class="num">3,180</td><td class="num">2,870 to 3,530</td></tr>
+            <tr><td>Green tea, 100 bags</td><td class="num">1,050</td><td class="num">880 to 1,240</td></tr>
+            <tr><td>Masala oats 400 g <span class="pill new">New</span><span class="sub">No sales history yet</span></td><td class="num">720</td><td class="num">510 to 960</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap data-head">
+    <h2>The data it works with</h2>
+  </div>
+</div>
+
+<main>
+  <div class="wrap data">
+    <div class="data-grid">
+      <div class="card dcard">
+        <svg viewBox="0 0 220 74" aria-hidden="true">
+          <path d="M4 50 C 24 30, 34 58, 54 40 S 84 22, 104 36 S 134 52, 154 30 S 194 20, 216 26" fill="none" stroke="#11615F" stroke-width="2.4"/>
+          <path d="M4 64 C 24 58, 34 68, 54 61 S 84 52, 104 58 S 134 66, 154 55 S 194 50, 216 53" fill="none" stroke="#1C8A85" stroke-opacity=".5" stroke-width="1.7"/>
+          <path d="M4 22 C 24 16, 34 30, 54 20 S 84 8, 104 16 S 134 26, 154 12 S 194 6, 216 8" fill="none" stroke="#1C8A85" stroke-opacity=".3" stroke-width="1.7"/>
+        </svg>
+        <h3>Time series</h3>
+        <p>Demand, load or prices, alone or for thousands of related series together, with promotions, weather and holidays as inputs.</p>
+      </div>
+      <div class="card dcard">
+        <svg viewBox="0 0 220 74" aria-hidden="true">
+          <g fill="none" stroke="#11615F" stroke-opacity=".45" stroke-width="1.2">
+            <rect x="4" y="4" width="212" height="66" rx="7"/>
+            <line x1="4" y1="20" x2="216" y2="20"/><line x1="4" y1="37" x2="216" y2="37"/><line x1="4" y1="54" x2="216" y2="54"/>
+            <line x1="57" y1="4" x2="57" y2="70"/><line x1="110" y1="4" x2="110" y2="70"/><line x1="163" y1="4" x2="163" y2="70"/>
+          </g>
+          <path d="M11 4 H209 A7 7 0 0 1 216 11 V20 H4 V11 A7 7 0 0 1 11 4 Z" fill="#11615F" fill-opacity=".12"/>
+          <rect x="163" y="37" width="53" height="17" fill="#F4A41E" fill-opacity=".6"/>
+        </svg>
+        <h3>Tables</h3>
+        <p>One row per customer, loan or transaction.</p>
+      </div>
+      <div class="card dcard">
+        <svg viewBox="0 0 220 74" aria-hidden="true">
+          <g stroke="#11615F" stroke-opacity=".22" stroke-width="1.4">
+            <line x1="4" y1="12" x2="216" y2="12"/><line x1="4" y1="37" x2="216" y2="37"/><line x1="4" y1="62" x2="216" y2="62"/>
+          </g>
+          <g fill="#11615F">
+            <circle cx="20" cy="12" r="4.5"/><circle cx="58" cy="12" r="4.5"/><circle cx="74" cy="12" r="4.5"/><circle cx="130" cy="12" r="4.5"/>
+            <circle cx="96" cy="37" r="4.5"/><circle cx="112" cy="37" r="4.5"/><circle cx="128" cy="37" r="4.5"/><circle cx="144" cy="37" r="4.5"/><circle cx="160" cy="37" r="4.5"/><circle cx="176" cy="37" r="4.5"/>
+            <circle cx="40" cy="62" r="4.5"/><circle cx="150" cy="62" r="4.5"/>
+          </g>
+          <g fill="#F4A41E"><circle cx="202" cy="12" r="5"/><circle cx="202" cy="37" r="5"/><circle cx="202" cy="62" r="5"/></g>
+        </svg>
+        <h3>Event histories</h3>
+        <p>Entities with any number of timestamped records. An example is a borrower with several accounts, each with 36 months of payment history.</p>
+      </div>
+      <div class="card dcard">
+        <svg viewBox="0 0 220 74" aria-hidden="true">
+          <g fill="#FFFFFF" stroke="#11615F" stroke-opacity=".5" stroke-width="1.2">
+            <rect x="4" y="26" width="56" height="44" rx="6"/>
+            <rect x="82" y="4" width="56" height="54" rx="6"/>
+            <rect x="160" y="26" width="56" height="44" rx="6"/>
+          </g>
+          <g stroke="#11615F" stroke-opacity=".35" stroke-width="1.2">
+            <line x1="4" y1="40" x2="60" y2="40"/><line x1="4" y1="55" x2="60" y2="55"/>
+            <line x1="82" y1="18" x2="138" y2="18"/><line x1="82" y1="31" x2="138" y2="31"/><line x1="82" y1="44" x2="138" y2="44"/>
+            <line x1="160" y1="40" x2="216" y2="40"/><line x1="160" y1="55" x2="216" y2="55"/>
+          </g>
+          <g fill="none" stroke="#F4A41E" stroke-width="2"><path d="M60 47 C 71 47, 71 24, 82 24"/><path d="M138 37 C 149 37, 149 48, 160 48"/></g>
+        </svg>
+        <h3>Relational data</h3>
+        <p>Several related tables, such as customers, orders and products, read as they stood at the time of each prediction.</p>
+      </div>
+    </div>
+  </div>
+
+  <section id="what">
+    <div class="wrap versus">
+      <div class="card problem">
+        <h2>The problem</h2>
+        <p class="muted">Most prediction projects spend their time before any model is fitted.</p>
+        <ol class="steps">
+          <li>Data has to be joined and cleaned.</li>
+          <li>Features have to be designed by hand: lags, rolling averages, summaries of past events.</li>
+          <li>A model is then fitted and tuned for one question.</li>
+          <li class="again">A new question or a change in the data means doing much of it again.</li>
+        </ol>
+        <p class="muted foot">Many firms have no team for this, so decisions run on rules of thumb and spreadsheets.</p>
+      </div>
+      <div class="ours">
+        <h2>What tabSutra does</h2>
+        <ul class="checks">
+          <li>You pass your tables with their timestamps.</li>
+          <li>The model reads the past examples in that data and predicts for the new cases.</li>
+          <li>Results come in hours, not months.</li>
+          <li>With enough history, the model is fine-tuned on your data for higher accuracy.</li>
+        </ul>
+        <p class="note">Data that comes as sequences, such as the months of a loan account, is read as a sequence. A standard model can only see such data as separate rows or as hand-made summaries.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="predict" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head"><h2 class="sec-title">What you can predict</h2></div>
+      <div class="bento">
+        <div class="card tile wide">
+          <div class="demo">
+            <svg viewBox="0 0 640 150" aria-hidden="true">
+              <g stroke="#DCE7E5" stroke-width="1"><line x1="0" y1="30" x2="640" y2="30"/><line x1="0" y1="75" x2="640" y2="75"/><line x1="0" y1="120" x2="640" y2="120"/></g>
+              <path d="M400 78 L 636 30 L 636 132 Z" fill="#F4A41E" fill-opacity=".18"/>
+              <path d="M400 78 L 636 56 L 636 104 Z" fill="#F4A41E" fill-opacity=".34"/>
+              <path d="M6 100 C 40 80, 60 112, 96 92 S 150 60, 186 82 S 240 110, 276 78 S 340 60, 400 78" fill="none" stroke="#11615F" stroke-width="2.6"/>
+              <path d="M400 78 L 636 79" fill="none" stroke="#B8730A" stroke-width="2.2" stroke-dasharray="6 6"/>
+              <line x1="400" y1="10" x2="400" y2="140" stroke="#86A09F" stroke-dasharray="3 5"/>
+              <text x="408" y="20" font-size="12" fill="#86A09F">today</text>
+              <text x="560" y="24" font-size="12" fill="#B8730A">high case</text>
+              <text x="560" y="146" font-size="12" fill="#B8730A">low case</text>
+            </svg>
+          </div>
+          <div><h3>Forecasts</h3><p>Forecasts with ranges, so you plan for the likely case and the bad case.</p></div>
+        </div>
+        <div class="card tile">
+          <div class="demo">
+            <div class="lbl" style="margin-bottom:12px">Default within 12 months</div>
+            <div class="bars">
+              <div class="bar"><span class="name">Customer 10482</span><span class="track"><span class="fill hi" style="width:62%"></span></span><b class="num">0.31</b></div>
+              <div class="bar"><span class="name">Customer 22719</span><span class="track"><span class="fill" style="width:24%"></span></span><b class="num">0.12</b></div>
+              <div class="bar"><span class="name">Customer 30155</span><span class="track"><span class="fill" style="width:8%"></span></span><b class="num">0.04</b></div>
+            </div>
+          </div>
+          <div><h3>Probabilities</h3><p>Probabilities, such as default, churn or fraud.</p></div>
+        </div>
+        <div class="card tile">
+          <div class="demo">
+            <div class="lbl">Time to failure, pump P-07</div>
+            <div class="big num">18 days</div>
+            <div class="range">80% range: 11 to 27 days</div>
+          </div>
+          <div><h3>Amounts and durations</h3><p>Amounts and durations, such as loss given default or time to failure.</p></div>
+        </div>
+        <div class="card tile wide">
+          <div class="demo">
+            <div class="tree">
+              <div class="top">Customer 10482 <b class="num">0.31</b></div>
+              <div class="kids">
+                <div class="kid">Credit card<b class="num">0.27</b></div>
+                <div class="kid">Personal loan<b class="num">0.19</b></div>
+                <div class="kid">Two-wheeler loan<b class="num">0.08</b></div>
+              </div>
+            </div>
+          </div>
+          <div><h3>Two levels at once</h3><p>Predictions at two levels at once, such as each account and the customer, or each SKU and the store.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cold" class="band">
+    <div class="wrap cold">
+      <div>
+        <h2 class="sec-title">New products, new stores, new markets</h2>
+        <ul class="intro">
+          <li>A new product has no sales history. Neither does a new store or a new category.</li>
+          <li>Most forecasting methods need that history, so these cases are planned by hand.</li>
+          <li>tabSutra represents every product, store and customer as an embedding.</li>
+        </ul>
+        <div class="gives">
+          <div class="give"><h3>Forecasts from day one</h3><p>A new product is forecast from the history of products like it.</p></div>
+          <div class="give"><h3>Slow movers are not left out</h3><p>An item with little history borrows from similar items with a lot of history.</p></div>
+          <div class="give"><h3>Any number of items</h3><p>The approach works the same for a hundred SKUs or ten million.</p></div>
+          <div class="give"><h3>Expansion</h3><p>A business entering a new region or category starts from what it already knows about similar regions and categories.</p></div>
+        </div>
+      </div>
+      <figure>
+        <svg class="scatter" id="scatter" viewBox="0 0 520 400" aria-hidden="true"></svg>
+        <div class="float" aria-hidden="true">
+          <div class="row"><span class="nm">Masala oats 400 g</span><span class="pill new">New</span></div>
+          <div class="meta">Forecast from 5 similar products</div>
+          <div class="val num">720<span>units, next 4 weeks</span></div>
+        </div>
+        <figcaption>Each dot is a product. A new product sits near the products it resembles.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section id="uses">
+    <div class="wrap">
+      <div class="sec-head"><h2 class="sec-title">Use cases</h2></div>
+      <div class="uses">
+        <div class="card use">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 4h2.2l2.3 11h10.8l2-8H6.4"/><circle cx="9" cy="19.5" r="1.4"/><circle cx="17" cy="19.5" r="1.4"/></svg></div>
+          <h3>Retail and consumer goods</h3>
+          <p>Demand at SKU and store level, including new launches and new stores. Replenishment and promotion effects.</p>
+        </div>
+        <div class="card use">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 9.5 12 4l9 5.5"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/></svg></div>
+          <h3>Lending and financial services</h3>
+          <p>Credit scoring from account histories, early warning, collections prioritisation.</p>
+        </div>
+        <div class="card use">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M13 2 5 13.5h6L10 22l8.5-12H12.5z"/></svg></div>
+          <h3>Energy and utilities</h3>
+          <p>Load and generation forecasts, at any time granularity.</p>
+        </div>
+        <div class="card use half">
+          <div class="icon"><svg viewBox="0 0 24 24"><rect x="2.5" y="7" width="17" height="10" rx="2"/><path d="M19.5 10.5h2v3h-2"/><path d="M11.5 8.8 9 12.2h3.2l-1.7 3"/></svg></div>
+          <h3>Electric vehicle fleets</h3>
+          <p>Battery management systems report voltage, temperature, charge cycles and faults for every vehicle. tabSutra reads these histories across the whole fleet to predict downtime, battery health and residual value.</p>
+        </div>
+        <div class="card use half">
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 20V10l5 3V10l5 3V6h3v14z"/><path d="M17 20V3h3v17"/><path d="M2 20h20"/></svg></div>
+          <h3>Manufacturing</h3>
+          <p>Sensor monitoring, failure prediction, maintenance planning.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="production" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head"><h2 class="sec-title">Built for production data</h2></div>
+      <div class="card prod">
+        <div>
+          <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div>
+          <h3>No look-ahead</h3><p>A prediction uses only what was known at its time, so back-tests reflect real use.</p>
+        </div>
+        <div>
+          <div class="icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2.5"/><path d="M3.5 9.5h17M9.5 3.5v17"/><path d="M13 13l4.5 4.5M17.5 13 13 17.5"/></svg></div>
+          <h3>Missing values are handled as missing</h3><p>Nothing is filled in by guesswork.</p>
+        </div>
+        <div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 12h18"/><circle cx="5" cy="12" r="1.6"/><circle cx="9.5" cy="12" r="1.6"/><circle cx="11.5" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/><path d="M15 7.5v-2M15 18.5v-2"/></svg></div>
+          <h3>Uneven timestamps are fine</h3><p>Records can arrive at any time, and late arrivals are treated as late.</p>
+        </div>
+        <div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M5 9h14M5 15h14"/></svg></div>
+          <h3>Consistent outputs</h3><p>The same data gives the same prediction. Reordering columns changes nothing.</p>
+        </div>
+        <div>
+          <div class="icon"><svg viewBox="0 0 24 24"><path d="M3 17c4-1 6-6 9-6s5 5 9 6"/><path d="M3 12c4-.5 6-3 9-3s5 2.5 9 3" opacity=".5"/></svg></div>
+          <h3>Ranges, not only point estimates</h3><p>Every forecast comes with its uncertainty.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" style="padding-top:0">
+    <div class="wrap">
+      <div class="sec-head"><h2 class="sec-title">How it is used</h2></div>
+      <ol class="how">
+        <li class="card">
+          <div class="step"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16"/><path d="M7 15l3.5-4 3 2.5L19 8"/></svg></span></div>
+          <p>tabSutra is first run on your historical data and compared with your current method.</p>
+        </li>
+        <li class="card">
+          <div class="step"><span class="icon"><svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="6" rx="1.5"/><rect x="3.5" y="14" width="17" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></span></div>
+          <p>It is then used through an API, or deployed on your own infrastructure so that data stays in-house.</p>
+        </li>
+        <li class="card">
+          <div class="step"><span class="icon"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></span></div>
+          <p>Either way, it can be fine-tuned on your full history.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="about" style="padding-top:0">
+    <div class="wrap pair">
+      <div class="card">
+        <h2>Team</h2>
+        <p>We are a team of applied ML scientists. We have worked on real-life data across industries, with methods ranging from classical machine learning to transformers.</p>
+      </div>
+      <div class="card sutra">
+        <h2>The name</h2>
+        <p>Sutra is Sanskrit for a thread, and for a short rule that holds a body of knowledge. tabSutra is one set of rules for structured data.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a class="mark" href="#top">
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M3 22 C 9 22, 10 10, 16 10 S 23 22, 29 22" fill="none" stroke="#8FD5CC" stroke-width="2" stroke-linecap="round"/>
+        <path d="M3 16 C 9 16, 10 6, 16 6 S 23 16, 29 16" fill="none" stroke="#F4A41E" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M3 27 C 9 27, 10 18, 16 18 S 23 27, 29 27" fill="none" stroke="#8FD5CC" stroke-opacity=".5" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      tabSutra
+    </a>
+    <div class="meta"><span>© 2026 tabSutra</span><span>tabsutra.com</span></div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var NS = "http://www.w3.org/2000/svg";
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  function el(name, attrs, parent) { var e = document.createElementNS(NS, name); for (var k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+
+  /* header background once the page scrolls */
+  var bar = document.getElementById("topbar");
+  function onScroll() { bar.classList.toggle("scrolled", window.scrollY > 24); }
+  window.addEventListener("scroll", onScroll, { passive: true }); onScroll();
+
+  /* hero panel: weekly history and an 80% forecast range */
+  var svg = document.getElementById("heroChart");
+  var NOW = 380, END = 552, STEP = 8, r = rng(11);
+  for (var g = 1; g < 4; g++) el("line", { x1: 0, y1: g * 45, x2: 560, y2: g * 45, stroke: "rgba(255,255,255,.06)" }, svg);
+  function level(x) { return 104 + 26 * Math.sin(2 * Math.PI * x / 104) - 0.05 * (x - NOW) + 8 * Math.sin(2 * Math.PI * x / 37); }
+  var d = "", last = 0;
+  for (var x = 8; x <= NOW; x += STEP) { last = level(x) + (r() - 0.5) * 14; d += (x === 8 ? "M" : "L") + x + " " + last.toFixed(1) + " "; }
+  el("path", { d: d, class: "t", stroke: "#8FD5CC", "stroke-width": 2.2, pathLength: 1 }, svg);
+  el("line", { x1: NOW, y1: 8, x2: NOW, y2: 182, stroke: "rgba(255,255,255,.3)", "stroke-dasharray": "3 5" }, svg);
+  el("text", { x: NOW + 8, y: 18, fill: "rgba(255,255,255,.5)", "font-size": 11 }, svg).textContent = "today";
+  var fan = el("g", { class: "fan" }, svg);
+  function mid(x) { var h = (x - NOW) / STEP; return level(x) + (last - level(NOW)) * Math.exp(-h / 3); }
+  function band(width, opacity) {
+    var up = "", down = [];
+    for (var x = NOW; x <= END; x += STEP) {
+      var h = (x - NOW) / STEP, w = width * Math.sqrt(h + 1);
+      up += (x === NOW ? "M" : "L") + x + " " + (mid(x) - w).toFixed(1) + " ";
+      down.unshift("L" + x + " " + (mid(x) + w).toFixed(1));
+    }
+    el("path", { d: up + down.join(" ") + " Z", fill: "#F4A41E", "fill-opacity": opacity }, fan);
+  }
+  band(9, 0.18); band(4.5, 0.32);
+  var md = ""; for (var x2 = NOW; x2 <= END; x2 += STEP) md += (x2 === NOW ? "M" : "L") + x2 + " " + mid(x2).toFixed(1) + " ";
+  el("path", { d: md, fill: "none", stroke: "#F8C978", "stroke-width": 2, "stroke-dasharray": "5 5" }, fan);
+
+  /* new products: every product as a point; a new one linked to its nearest neighbours */
+  var sc = document.getElementById("scatter"), s = rng(5);
+  function gauss() { return Math.sqrt(-2 * Math.log(s() + 1e-9)) * Math.cos(2 * Math.PI * s()); }
+  var clusters = [[110, 100, 32], [380, 90, 30], [120, 290, 34], [290, 205, 26]];
+  var pts = [];
+  clusters.forEach(function (c) { for (var i = 0; i < 15; i++) pts.push([c[0] + gauss() * c[2], c[1] + gauss() * c[2]]); });
+  var novel = [332, 186];
+  var near = pts.map(function (p, i) { return [Math.hypot(p[0] - novel[0], p[1] - novel[1]), i]; }).sort(function (a, b) { return a[0] - b[0]; }).slice(0, 5);
+  near.forEach(function (n) { var p = pts[n[1]]; el("line", { x1: novel[0], y1: novel[1], x2: p[0], y2: p[1], stroke: "#F4A41E", "stroke-opacity": 0.55, "stroke-width": 1.3 }, sc); });
+  pts.forEach(function (p) { el("circle", { cx: p[0].toFixed(1), cy: p[1].toFixed(1), r: 5, fill: "#8FD5CC", "fill-opacity": 0.7 }, sc); });
+  el("circle", { cx: novel[0], cy: novel[1], r: 16, fill: "#F4A41E", "fill-opacity": 0.12, stroke: "#F4A41E", "stroke-opacity": 0.5, "stroke-width": 1.5 }, sc);
+  el("circle", { cx: novel[0], cy: novel[1], r: 7, fill: "#F4A41E" }, sc);
+})();
+</script>
+</body>
+</html>
